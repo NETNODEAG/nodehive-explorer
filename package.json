@@ -1,5 +1,5 @@
 {
-  "name": "nodehive-explorer-react",
+  "name": "nodehive-explorer",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "nodehive-js": "file:../package",
+    "nodehive-js": "2.0.0-beta.1",
     "drupal-jsonapi-params": "^2.3.1",
     "lucide-react": "^0.263.1",
     "clsx": "^2.0.0"
