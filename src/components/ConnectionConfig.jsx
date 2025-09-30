@@ -5,7 +5,7 @@ import clsx from 'clsx';
 function ConnectionConfig({ onConnect, onDisconnect, isConnected, isLoading }) {
   const [isOpen, setIsOpen] = useState(false);
   const [config, setConfig] = useState({
-    baseUrl: 'https://netnode.nodehive.app',
+    baseUrl: 'https://demo.nodehive.app',
     language: '',
     timeout: 30000,
     debug: true,
