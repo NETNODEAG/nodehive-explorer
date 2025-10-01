@@ -345,7 +345,7 @@ function App() {
 
           {/* Request/Response Column */}
           <div className="w-[400px] border-r border-border flex flex-col">
-            <RequestPanel requestInfo={requestInfo} />
+            <RequestPanel requestInfo={requestInfo} responseData={responseData} />
           </div>
 
           {/* Data Viewer Column */}

@@ -2,9 +2,17 @@ import React from 'react';
 import { Globe, Clock, CheckCircle, XCircle, Copy } from 'lucide-react';
 import clsx from 'clsx';
 
-function RequestPanel({ requestInfo }) {
+function RequestPanel({ requestInfo, responseData }) {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const getDataSize = () => {
+    if (!responseData) return '0 KB';
+    const jsonString = JSON.stringify(responseData);
+    const bytes = new Blob([jsonString]).size;
+    const kb = (bytes / 1024).toFixed(2);
+    return `${kb} KB`;
   };
 
   if (!requestInfo) {
@@ -113,6 +121,15 @@ function RequestPanel({ requestInfo }) {
                     <span className="text-xs text-muted-foreground w-16">Duration:</span>
                     <span className="text-sm font-mono bg-secondary px-2 py-1 rounded">
                       {requestInfo.duration}ms
+                    </span>
+                  </div>
+                )}
+
+                {responseData && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground w-16">Size:</span>
+                    <span className="text-sm font-mono bg-secondary px-2 py-1 rounded">
+                      {getDataSize()}
                     </span>
                   </div>
                 )}
