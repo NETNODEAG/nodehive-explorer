@@ -5,7 +5,7 @@ import ConnectionConfig from './components/ConnectionConfig';
 import EntityExplorer from './components/EntityExplorer';
 import RequestPanel from './components/RequestPanel';
 import DataViewer from './components/DataViewer';
-import { User, Key, LogOut, ChevronDown } from 'lucide-react';
+import { User, Key, LogOut, ChevronDown, ExternalLink } from 'lucide-react';
 import useConnectionStore from './store/connectionStore';
 
 function App() {
@@ -147,8 +147,16 @@ function App() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between px-6 py-4 bg-card border-b border-border">
           <h1 className="flex items-center gap-3 text-xl font-semibold">
-            <span className="text-2xl">🔍</span>
-            NodeHive Explorer
+            NodeHive API Explorer
+            <a
+              href="https://www.nodehive.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs font-normal text-muted-foreground hover:text-primary transition-colors ml-2 px-2 py-1 rounded-md hover:bg-secondary"
+            >
+              www.nodehive.com
+              <ExternalLink size={12} />
+            </a>
           </h1>
           <div className="flex items-center gap-4">
             {isConnected && userInfo && (

@@ -18,7 +18,7 @@ export default {
           foreground: '#f0f0f0'
         },
         primary: {
-          DEFAULT: '#3b82f6',
+          DEFAULT: '#14b8a6',
           foreground: '#ffffff'
         },
         secondary: {
@@ -30,7 +30,7 @@ export default {
           foreground: '#737373'
         },
         accent: {
-          DEFAULT: '#3b82f6',
+          DEFAULT: '#14b8a6',
           foreground: '#ffffff'
         },
         destructive: {
@@ -39,7 +39,7 @@ export default {
         },
         border: '#262626',
         input: '#262626',
-        ring: '#3b82f6',
+        ring: '#14b8a6',
       },
       borderRadius: {
         lg: '0.5rem',
