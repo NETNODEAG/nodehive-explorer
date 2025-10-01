@@ -3,8 +3,10 @@ import { DrupalJsonApiParams } from 'drupal-jsonapi-params';
 import { Image, Loader2, Search, Code } from 'lucide-react';
 import CodeGenerator from '../CodeGenerator';
 import { generateMediaCode } from '../../utils/codeGenerator';
+import useConnectionStore from '../../store/connectionStore';
 
 function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+  const { config } = useConnectionStore();
   const [formData, setFormData] = useState({
     mediaType: 'image',
     limit: 10,
@@ -131,7 +133,7 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateMediaCode(formData, client._config)}
+          code={generateMediaCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}

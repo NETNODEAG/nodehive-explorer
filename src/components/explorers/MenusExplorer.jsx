@@ -4,8 +4,10 @@ import { Menu, Loader2, Search, List, Code } from 'lucide-react';
 import FieldSelector from '../FieldSelector';
 import CodeGenerator from '../CodeGenerator';
 import { generateMenuCode } from '../../utils/codeGenerator';
+import useConnectionStore from '../../store/connectionStore';
 
 function MenusExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+  const { config } = useConnectionStore();
   const [menus, setMenus] = useState([]);
   const [formData, setFormData] = useState({
     menuId: '',
@@ -295,7 +297,7 @@ function MenusExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateMenuCode(formData, client._config)}
+          code={generateMenuCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}

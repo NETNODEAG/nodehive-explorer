@@ -10,7 +10,7 @@ export function generateNodeCode(formData, clientConfig = {}) {
   code.push(`async function fetchNodes() {`);
   code.push(`  // Initialize the client`);
   code.push(`  const client = new NodeHiveClient({`);
-  code.push(`    baseUrl: '${clientConfig.baseUrl || 'https://your-site.nodehive.app'}',`);
+  code.push(`    baseUrl: '${clientConfig?.baseUrl || 'https://your-site.nodehive.app'}',`);
 
   if (clientConfig.language) {
     code.push(`    defaultLanguage: '${clientConfig.language}',`);

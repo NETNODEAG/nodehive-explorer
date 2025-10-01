@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Database, Loader2, Code } from 'lucide-react';
 import CodeGenerator from '../CodeGenerator';
 import { generateContentTypesCode } from '../../utils/codeGenerator';
+import useConnectionStore from '../../store/connectionStore';
 
 function ContentTypesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+  const { config } = useConnectionStore();
   const [showCodeGenerator, setShowCodeGenerator] = useState(false);
   const loadContentTypes = async () => {
     try {
@@ -72,7 +74,7 @@ function ContentTypesExplorer({ client, onDataFetch, isLoading, setIsLoading, se
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateContentTypesCode(client._config)}
+          code={generateContentTypesCode(config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}

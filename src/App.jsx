@@ -6,8 +6,10 @@ import EntityExplorer from './components/EntityExplorer';
 import RequestPanel from './components/RequestPanel';
 import DataViewer from './components/DataViewer';
 import { User, Key, LogOut, ChevronDown } from 'lucide-react';
+import useConnectionStore from './store/connectionStore';
 
 function App() {
+  const { setConfig } = useConnectionStore();
   const [client, setClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState('nodes');
@@ -38,6 +40,9 @@ function App() {
     try {
       setIsLoading(true);
       setError(null);
+
+      // Update the global store with the current config
+      setConfig(config);
 
       const newClient = new NodeHiveClient({
         baseUrl: config.baseUrl,

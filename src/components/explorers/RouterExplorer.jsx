@@ -3,8 +3,10 @@ import { DrupalJsonApiParams } from 'drupal-jsonapi-params';
 import { Link, Loader2, Search, Code, ExternalLink } from 'lucide-react';
 import CodeGenerator from '../CodeGenerator';
 import { generateRouterCode } from '../../utils/codeGenerator';
+import useConnectionStore from '../../store/connectionStore';
 
 function RouterExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+  const { config } = useConnectionStore();
   const [formData, setFormData] = useState({
     path: '',
     method: 'getRouteByPath',
@@ -297,7 +299,7 @@ function RouterExplorer({ client, onDataFetch, isLoading, setIsLoading, setError
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateRouterCode(formData, client._config)}
+          code={generateRouterCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}

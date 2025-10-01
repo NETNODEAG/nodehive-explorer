@@ -4,8 +4,10 @@ import { Globe, Loader2, Search, Code, ShieldAlert } from 'lucide-react';
 import FieldSelector from '../FieldSelector';
 import CodeGenerator from '../CodeGenerator';
 import { generateSpacesCode } from '../../utils/codeGenerator';
+import useConnectionStore from '../../store/connectionStore';
 
 function SpacesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError, userInfo }) {
+  const { config } = useConnectionStore();
   const [formData, setFormData] = useState({
     spaceId: '',
     language: '',
@@ -316,7 +318,7 @@ function SpacesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateSpacesCode(formData, client._config)}
+          code={generateSpacesCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}

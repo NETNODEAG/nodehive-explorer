@@ -4,8 +4,10 @@ import { Search, Loader2, ChevronDown, ChevronUp, Code } from 'lucide-react';
 import FieldSelector from '../FieldSelector';
 import CodeGenerator from '../CodeGenerator';
 import { generateNodeCode } from '../../utils/codeGenerator';
+import useConnectionStore from '../../store/connectionStore';
 
 function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+  const { config } = useConnectionStore();
   const [contentTypes, setContentTypes] = useState([]);
   const [formData, setFormData] = useState({
     contentType: '',
@@ -268,7 +270,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateNodeCode(formData, client._config)}
+          code={generateNodeCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}

@@ -1,21 +1,11 @@
 import React, { useState } from 'react';
 import { Settings, Loader2, Wifi, WifiOff, User, Lock, Eye, EyeOff } from 'lucide-react';
 import clsx from 'clsx';
+import useConnectionStore from '../store/connectionStore';
 
 function ConnectionConfig({ onConnect, onDisconnect, isConnected, isLoading }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [config, setConfig] = useState({
-    baseUrl: 'https://demo.nodehive.app',
-    language: '',
-    timeout: 30000,
-    debug: true,
-    retryEnabled: true,
-    retryAttempts: 3,
-    authToken: '',
-    useAuth: false,
-    username: '',
-    password: ''
-  });
+  const { config, setConfig } = useConnectionStore();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {

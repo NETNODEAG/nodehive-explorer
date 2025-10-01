@@ -4,8 +4,10 @@ import { Search, Loader2, Tag, Code } from 'lucide-react';
 import FieldSelector from '../FieldSelector';
 import CodeGenerator from '../CodeGenerator';
 import { generateTaxonomyCode } from '../../utils/codeGenerator';
+import useConnectionStore from '../../store/connectionStore';
 
 function TaxonomyExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+  const { config } = useConnectionStore();
   const [vocabularies, setVocabularies] = useState([]);
   const [formData, setFormData] = useState({
     vocabulary: '',
@@ -303,7 +305,7 @@ function TaxonomyExplorer({ client, onDataFetch, isLoading, setIsLoading, setErr
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateTaxonomyCode(formData, client._config)}
+          code={generateTaxonomyCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}
