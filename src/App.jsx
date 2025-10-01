@@ -161,6 +161,26 @@ function App() {
     setResponseData(data);
   };
 
+  const handleLoadPagination = async (url) => {
+    if (!client || !url) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Extract path from full URL (API returns absolute URLs)
+      const urlObj = new URL(url);
+      const pathWithQuery = urlObj.pathname + urlObj.search;
+
+      const response = await client.request(pathWithQuery);
+      setResponseData(response);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex w-screen h-screen bg-background">
       <Sidebar
@@ -330,7 +350,11 @@ function App() {
 
           {/* Data Viewer Column */}
           <div className="flex-1 flex flex-col min-w-[400px]">
-            <DataViewer data={responseData} />
+            <DataViewer
+              data={responseData}
+              onLoadPagination={handleLoadPagination}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </div>

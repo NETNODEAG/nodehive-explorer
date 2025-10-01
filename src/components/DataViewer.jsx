@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Database, Copy, ChevronRight, ChevronDown, Eye, Code, Table, AlertCircle, Lock } from 'lucide-react';
+import { Database, Copy, ChevronRight, ChevronDown, Eye, Code, Table, AlertCircle, Lock, ChevronLeft, ChevronsLeft, ChevronsRight, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 
-function DataViewer({ data }) {
+function DataViewer({ data, onLoadPagination, isLoading }) {
   const [viewMode, setViewMode] = useState('table'); // 'table', 'formatted' or 'raw'
   const [expandedItems, setExpandedItems] = useState(new Set(['root'])); // Start with root expanded
 
@@ -286,6 +286,54 @@ function DataViewer({ data }) {
                 </details>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {data?.links && (data.links.prev || data.links.next || data.links.first || data.links.last) && (
+        <div className="mx-4 mt-4 flex items-center justify-between border-t border-border pt-4">
+          <div className="text-sm text-muted-foreground">
+            {data.meta?.count !== undefined && (
+              <span>Showing {data.data?.length || 0} of {data.meta.count} items</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onLoadPagination(data.links.first?.href)}
+              disabled={!data.links.first || isLoading}
+              className="btn btn-ghost btn-sm"
+              title="First page"
+            >
+              <ChevronsLeft size={16} />
+            </button>
+            <button
+              onClick={() => onLoadPagination(data.links.prev?.href)}
+              disabled={!data.links.prev || isLoading}
+              className="btn btn-ghost btn-sm"
+              title="Previous page"
+            >
+              <ChevronLeft size={16} />
+              Previous
+            </button>
+            {isLoading && <Loader2 className="animate-spin" size={16} />}
+            <button
+              onClick={() => onLoadPagination(data.links.next?.href)}
+              disabled={!data.links.next || isLoading}
+              className="btn btn-ghost btn-sm"
+              title="Next page"
+            >
+              Next
+              <ChevronRight size={16} />
+            </button>
+            <button
+              onClick={() => onLoadPagination(data.links.last?.href)}
+              disabled={!data.links.last || isLoading}
+              className="btn btn-ghost btn-sm"
+              title="Last page"
+            >
+              <ChevronsRight size={16} />
+            </button>
           </div>
         </div>
       )}
