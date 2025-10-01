@@ -120,15 +120,6 @@ function DataViewer({ data }) {
       );
     }
 
-    // Debug: Log the first item to see its structure
-    if (items.length > 0) {
-      console.log('First item structure:', items[0]);
-      console.log('Item keys:', Object.keys(items[0]));
-      if (items[0].attributes) {
-        console.log('Attributes keys:', Object.keys(items[0].attributes));
-      }
-    }
-
     // Get all unique keys from all items
     const allKeys = new Set();
     items.forEach(item => {

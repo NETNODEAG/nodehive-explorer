@@ -5,11 +5,12 @@ import ConnectionConfig from './components/ConnectionConfig';
 import EntityExplorer from './components/EntityExplorer';
 import RequestPanel from './components/RequestPanel';
 import DataViewer from './components/DataViewer';
-import { User, Key, LogOut, ChevronDown, ExternalLink } from 'lucide-react';
+import { User, Key, LogOut, ChevronDown, ExternalLink, Wifi, WifiOff, Shield } from 'lucide-react';
+import clsx from 'clsx';
 import useConnectionStore from './store/connectionStore';
 
 function App() {
-  const { setConfig } = useConnectionStore();
+  const { config, setConfig, updateConfig } = useConnectionStore();
   const [client, setClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState('nodes');
@@ -20,7 +21,31 @@ function App() {
   const [userInfo, setUserInfo] = useState(null);
   const [authToken, setAuthToken] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showConnectionConfig, setShowConnectionConfig] = useState(false);
   const userMenuRef = useRef(null);
+
+  // Check for baseUrl in URL parameters on mount and auto-connect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const baseUrlParam = params.get('baseurl') || params.get('baseUrl');
+
+    if (baseUrlParam) {
+      // Ensure it has protocol
+      let fullUrl = baseUrlParam;
+      if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+        fullUrl = `https://${fullUrl}`;
+      }
+
+      updateConfig({ baseUrl: fullUrl });
+
+      // Auto-connect with the provided baseUrl
+      const autoConnectConfig = {
+        ...config,
+        baseUrl: fullUrl
+      };
+      handleConnect(autoConnectConfig);
+    }
+  }, []); // Empty dependency array to run only once on mount
 
   // Click outside handler for user menu
   useEffect(() => {
@@ -159,6 +184,7 @@ function App() {
             </a>
           </h1>
           <div className="flex items-center gap-4">
+            {/* User Info or Anonymous Indicator */}
             {isConnected && userInfo && (
               <div className="relative" ref={userMenuRef}>
                 <button
@@ -216,18 +242,56 @@ function App() {
               </div>
             )}
 
-            {isConnected && !userInfo && authToken && (
-              <div className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground">
-                <Key size={16} />
-                <span>Authenticated (Token)</span>
+            {/* Anonymous Connection Indicator */}
+            {isConnected && !userInfo && !authToken && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted border border-border">
+                <Shield size={16} className="text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">Anonymous</span>
+                <button
+                  onClick={() => setShowConnectionConfig(true)}
+                  className="text-xs text-primary hover:text-primary/80 underline ml-1"
+                >
+                  Login
+                </button>
               </div>
             )}
+
+            {/* Connection Status Indicator */}
+            <button
+              onClick={() => setShowConnectionConfig(true)}
+              className={clsx(
+                'flex items-center gap-2 px-3 py-2 rounded-md transition-all hover:scale-105',
+                isConnected
+                  ? 'bg-card border border-border hover:border-primary/50'
+                  : 'bg-card border border-destructive/50 hover:border-destructive'
+              )}
+            >
+              <div className={clsx(
+                'w-2 h-2 rounded-full',
+                isConnected ? 'bg-primary animate-pulse' : 'bg-destructive'
+              )} />
+              {isConnected ? (
+                <Wifi size={14} className="text-primary" />
+              ) : (
+                <WifiOff size={14} className="text-destructive" />
+              )}
+              <div className="flex flex-col items-end">
+                <span className="text-xs font-medium text-foreground">Backend connection</span>
+                {isConnected && config.baseUrl && (
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    {config.baseUrl.replace(/^https?:\/\//, '')}
+                  </span>
+                )}
+              </div>
+            </button>
 
             <ConnectionConfig
               onConnect={handleConnect}
               onDisconnect={handleDisconnect}
               isConnected={isConnected}
               isLoading={isLoading}
+              externalIsOpen={showConnectionConfig}
+              externalSetIsOpen={setShowConnectionConfig}
             />
           </div>
         </header>

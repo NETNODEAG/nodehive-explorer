@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Settings, Loader2, Wifi, WifiOff, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { Settings, User, Lock, Eye, EyeOff } from 'lucide-react';
 import clsx from 'clsx';
 import useConnectionStore from '../store/connectionStore';
 
-function ConnectionConfig({ onConnect, onDisconnect, isConnected, isLoading }) {
-  const [isOpen, setIsOpen] = useState(false);
+function ConnectionConfig({ onConnect, onDisconnect, isConnected, isLoading, externalIsOpen, externalSetIsOpen }) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const { config, setConfig } = useConnectionStore();
   const [showPassword, setShowPassword] = useState(false);
+
+  // Use external state if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = externalSetIsOpen || setInternalIsOpen;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,32 +25,6 @@ function ConnectionConfig({ onConnect, onDisconnect, isConnected, isLoading }) {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className={clsx(
-          'btn btn-md',
-          isConnected ? 'btn-secondary' : 'btn-primary'
-        )}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="animate-spin mr-2" size={16} />
-            Connecting...
-          </>
-        ) : isConnected ? (
-          <>
-            <Wifi className="mr-2" size={16} />
-            Connected
-          </>
-        ) : (
-          <>
-            <WifiOff className="mr-2" size={16} />
-            Connect
-          </>
-        )}
-      </button>
-
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-card rounded-lg p-6 w-full max-w-md border border-border animate-fade-in">
