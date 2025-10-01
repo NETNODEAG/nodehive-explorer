@@ -149,26 +149,12 @@ function TaxonomyExplorer({ client, onDataFetch, isLoading, setIsLoading, setErr
     }
   };
 
-  const loadVocabularyList = async () => {
-    try {
-      setIsLoading(true);
-      const params = new DrupalJsonApiParams();
-      params.addCustomParam({ jsonapi_include: 1 });
-      const response = await client.getTaxonomyVocabularies({ params });
-      onDataFetch(response);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-border">
         <h3 className="font-medium flex items-center gap-2">
           <Tag size={18} />
-          Explore Taxonomy
+          Explore Taxonomy Terms
         </h3>
       </div>
 
@@ -297,17 +283,8 @@ function TaxonomyExplorer({ client, onDataFetch, isLoading, setIsLoading, setErr
 
           <button
             type="button"
-            onClick={loadVocabularyList}
-            className="btn btn-secondary btn-md w-full"
-            disabled={isLoading}
-          >
-            Load All Vocabularies
-          </button>
-
-          <button
-            type="button"
             onClick={() => setShowCodeGenerator(true)}
-            className="btn btn-outline btn-md w-full"
+            className="btn btn-secondary btn-md w-full"
             disabled={!formData.vocabulary}
           >
             <Code className="mr-2" size={16} />

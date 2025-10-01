@@ -17,7 +17,7 @@ import clsx from 'clsx';
 
 const contentEntities = [
   { id: 'nodes', label: 'Nodes', icon: FileText, description: 'Content nodes' },
-  { id: 'taxonomy', label: 'Taxonomy', icon: Tag, description: 'Taxonomy terms' },
+  { id: 'taxonomy', label: 'Taxonomy Terms', icon: Tag, description: 'Taxonomy terms' },
   { id: 'media', label: 'Media', icon: Image, description: 'Files & images' },
   { id: 'menus', label: 'Menus', icon: Menu, description: 'Menu links' },
   { id: 'texts', label: 'Texts', icon: Type, description: 'Text content' },
