@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, Copy, ChevronRight, ChevronDown, Eye, Code, Table } from 'lucide-react';
+import { Database, Copy, ChevronRight, ChevronDown, Eye, Code, Table, AlertCircle, Lock } from 'lucide-react';
 import clsx from 'clsx';
 
 function DataViewer({ data }) {
@@ -255,6 +255,40 @@ function DataViewer({ data }) {
           </button>
         </div>
       </div>
+
+      {/* Omitted Items Warning */}
+      {data?.meta?.omitted && (
+        <div className="mx-4 mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Lock className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-medium text-yellow-500 mb-1">
+                {data.meta.count ? `${data.meta.count} item(s) hidden due to permissions` : 'Some items hidden due to permissions'}
+              </h4>
+              <p className="text-xs text-muted-foreground mb-2">
+                {data.meta.omitted.detail || 'Some resources have been omitted because of insufficient authorization.'}
+              </p>
+              {data.meta.omitted.links && Object.keys(data.meta.omitted.links).length > 1 && (
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-yellow-500 hover:text-yellow-400">
+                    View permission details
+                  </summary>
+                  <div className="mt-2 space-y-2 pl-4 border-l-2 border-yellow-500/30">
+                    {Object.entries(data.meta.omitted.links).map(([key, value]) => {
+                      if (key === 'help') return null;
+                      return value?.meta?.detail ? (
+                        <div key={key} className="text-muted-foreground">
+                          • {value.meta.detail}
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </details>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto overflow-x-auto scrollbar-thin p-4 min-h-0">
         {viewMode === 'table' ? (

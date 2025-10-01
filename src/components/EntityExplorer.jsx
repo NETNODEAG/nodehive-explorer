@@ -5,7 +5,13 @@ import ContentTypesExplorer from './explorers/ContentTypesExplorer';
 import MediaExplorer from './explorers/MediaExplorer';
 import MenusExplorer from './explorers/MenusExplorer';
 import RouterExplorer from './explorers/RouterExplorer';
+import TextsExplorer from './explorers/TextsExplorer';
+import FragmentsExplorer from './explorers/FragmentsExplorer';
 import SpacesExplorer from './explorers/SpacesExplorer';
+import AreasExplorer from './explorers/AreasExplorer';
+import MediaTypesExplorer from './explorers/MediaTypesExplorer';
+import FragmentTypesExplorer from './explorers/FragmentTypesExplorer';
+import TaxonomyVocabulariesExplorer from './explorers/TaxonomyVocabulariesExplorer';
 import { AlertCircle } from 'lucide-react';
 
 function EntityExplorer({ entity, client, isConnected, onDataFetch, isLoading, setIsLoading, setError, userInfo }) {
@@ -30,7 +36,13 @@ function EntityExplorer({ entity, client, isConnected, onDataFetch, isLoading, s
     'media': MediaExplorer,
     'menus': MenusExplorer,
     'router': RouterExplorer,
+    'texts': TextsExplorer,
+    'fragments': FragmentsExplorer,
     'spaces': SpacesExplorer,
+    'areas': AreasExplorer,
+    'media-types': MediaTypesExplorer,
+    'fragment-types': FragmentTypesExplorer,
+    'taxonomy-vocabularies': TaxonomyVocabulariesExplorer,
   };
 
   const Explorer = explorers[entity];

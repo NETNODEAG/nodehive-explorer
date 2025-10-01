@@ -14,7 +14,7 @@
     "clsx": "^2.0.0",
     "drupal-jsonapi-params": "^2.3.1",
     "lucide-react": "^0.263.1",
-    "nodehive-js": "^2.0.0-beta.2",
+    "nodehive-js": "^2.0.0-beta.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zustand": "^5.0.8"

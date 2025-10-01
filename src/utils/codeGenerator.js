@@ -519,3 +519,235 @@ export function generateSpacesCode(formData, clientConfig) {
 
   return code.join('\n');
 }
+
+export function generateTextsCode(formData, clientConfig = {}) {
+  const code = [];
+
+  // Import statements
+  code.push(`import { NodeHiveClient } from 'nodehive-js';`);
+  code.push(`import { DrupalJsonApiParams } from 'drupal-jsonapi-params';`);
+  code.push('');
+
+  // Function definition
+  code.push(`async function fetchTexts() {`);
+  code.push(`  // Initialize the client`);
+  code.push(`  const client = new NodeHiveClient({`);
+  code.push(`    baseUrl: '${clientConfig?.baseUrl || 'https://your-site.nodehive.app'}',`);
+
+  if (clientConfig.debug !== undefined) {
+    code.push(`    debug: ${clientConfig.debug},`);
+  }
+  if (clientConfig.authToken) {
+    code.push(`    auth: {`);
+    code.push(`      token: process.env.AUTH_TOKEN || '${clientConfig.authToken}'`);
+    code.push(`    }`);
+  }
+  code.push(`  });`);
+  code.push('');
+
+  // Build params
+  code.push(`  // Build query parameters`);
+  code.push(`  const params = new DrupalJsonApiParams();`);
+
+  if (formData.limit) {
+    code.push(`  params.addPageLimit(${formData.limit});`);
+  }
+
+  code.push(`  params.addCustomParam({ jsonapi_include: 1 });`);
+  code.push('');
+
+  // Make the request
+  code.push(`  // Fetch the data`);
+  code.push(`  try {`);
+
+  const optionsArr = [];
+  if (formData.language) {
+    optionsArr.push(`lang: '${formData.language}'`);
+  }
+  optionsArr.push('params');
+
+  code.push(`    const response = await client.getTexts({`);
+  optionsArr.forEach((opt, index) => {
+    code.push(`      ${opt}${index < optionsArr.length - 1 ? ',' : ''}`);
+  });
+  code.push(`    });`);
+  code.push('');
+  code.push(`    console.log('Fetched texts:', response.data);`);
+  code.push(`    return response;`);
+  code.push(`  } catch (error) {`);
+  code.push(`    console.error('Failed to fetch texts:', error);`);
+  code.push(`    throw error;`);
+  code.push(`  }`);
+  code.push(`}`);
+  code.push('');
+  code.push('// Call the function');
+  code.push('fetchTexts();');
+
+  return code.join('\n');
+}
+
+export function generateFragmentCode(formData, clientConfig = {}) {
+  const code = [];
+
+  // Import statements
+  code.push(`import { NodeHiveClient } from 'nodehive-js';`);
+  code.push(`import { DrupalJsonApiParams } from 'drupal-jsonapi-params';`);
+  code.push('');
+
+  // Function definition
+  code.push(`async function fetchFragments() {`);
+  code.push(`  // Initialize the client`);
+  code.push(`  const client = new NodeHiveClient({`);
+  code.push(`    baseUrl: '${clientConfig?.baseUrl || 'https://your-site.nodehive.app'}',`);
+
+  if (clientConfig.language) {
+    code.push(`    defaultLanguage: '${clientConfig.language}',`);
+  }
+  if (clientConfig.timeout) {
+    code.push(`    timeout: ${clientConfig.timeout},`);
+  }
+  if (clientConfig.debug !== undefined) {
+    code.push(`    debug: ${clientConfig.debug},`);
+  }
+  if (clientConfig.authToken) {
+    code.push(`    auth: {`);
+    code.push(`      token: process.env.AUTH_TOKEN || '${clientConfig.authToken}'`);
+    code.push(`    },`);
+  }
+  if (clientConfig.retryEnabled) {
+    code.push(`    retry: {`);
+    code.push(`      enabled: true,`);
+    code.push(`      maxAttempts: ${clientConfig.retryAttempts || 3},`);
+    code.push(`      delay: 1000`);
+    code.push(`    }`);
+  }
+  code.push(`  });`);
+  code.push('');
+
+  // Build params
+  code.push(`  // Build query parameters`);
+  code.push(`  const params = new DrupalJsonApiParams();`);
+
+  if (formData.limit) {
+    code.push(`  params.addPageLimit(${formData.limit});`);
+  }
+
+  if (formData.sort) {
+    const [field, direction] = formData.sort.split(',');
+    code.push(`  params.addSort('${field}', '${direction}');`);
+  }
+
+  if (formData.includes) {
+    const includes = formData.includes.split(',').map(i => `'${i.trim()}'`).join(', ');
+    code.push(`  params.addInclude([${includes}]);`);
+  }
+
+  if (formData.fields && formData.fields.length > 0) {
+    const fields = formData.fields.map(f => `'${f}'`).join(', ');
+    code.push(`  params.addFields('nodehive_fragment--${formData.fragmentType}', [${fields}]);`);
+  }
+
+  code.push('');
+
+  // Make the request
+  code.push(`  // Fetch the data`);
+  code.push(`  try {`);
+  code.push(`    const endpoint = '/jsonapi/nodehive_fragment/${formData.fragmentType}';`);
+  code.push(`    const queryString = params.getQueryString();`);
+  code.push(`    const fullEndpoint = queryString ? \`\${endpoint}?\${queryString}\` : endpoint;`);
+  code.push('');
+
+  const optionsArr = [];
+  if (formData.language) {
+    optionsArr.push(`lang: '${formData.language}'`);
+  }
+
+  if (optionsArr.length > 0) {
+    code.push(`    const response = await client.request(fullEndpoint, {`);
+    optionsArr.forEach((opt, index) => {
+      code.push(`      ${opt}${index < optionsArr.length - 1 ? ',' : ''}`);
+    });
+    code.push(`    });`);
+  } else {
+    code.push(`    const response = await client.request(fullEndpoint);`);
+  }
+
+  code.push('');
+  code.push(`    console.log('Fetched fragments:', response.data);`);
+  code.push(`    return response;`);
+  code.push(`  } catch (error) {`);
+  code.push(`    console.error('Failed to fetch fragments:', error);`);
+  code.push(`    throw error;`);
+  code.push(`  }`);
+  code.push(`}`);
+  code.push('');
+  code.push('// Call the function');
+  code.push('fetchFragments();');
+
+  return code.join('\n');
+}
+
+export function generateAreasCode(formData, clientConfig = {}) {
+  const code = [];
+
+  // Import statements
+  code.push(`import { NodeHiveClient } from 'nodehive-js';`);
+  code.push(`import { DrupalJsonApiParams } from 'drupal-jsonapi-params';`);
+  code.push('');
+
+  // Function definition
+  code.push(`async function fetchAreas() {`);
+  code.push(`  // Initialize the client`);
+  code.push(`  const client = new NodeHiveClient({`);
+  code.push(`    baseUrl: '${clientConfig?.baseUrl || 'https://your-site.nodehive.app'}',`);
+
+  if (clientConfig.debug !== undefined) {
+    code.push(`    debug: ${clientConfig.debug},`);
+  }
+  if (clientConfig.authToken) {
+    code.push(`    auth: {`);
+    code.push(`      token: process.env.AUTH_TOKEN || '${clientConfig.authToken}'`);
+    code.push(`    }`);
+  }
+  code.push(`  });`);
+  code.push('');
+
+  // Build params
+  code.push(`  // Build query parameters`);
+  code.push(`  const params = new DrupalJsonApiParams();`);
+
+  if (formData.limit) {
+    code.push(`  params.addPageLimit(${formData.limit});`);
+  }
+
+  code.push(`  params.addCustomParam({ jsonapi_include: 1 });`);
+  code.push('');
+
+  // Make the request
+  code.push(`  // Fetch the data`);
+  code.push(`  try {`);
+  code.push(`    const endpoint = '/jsonapi/nodehive_area/nodehive_area';`);
+  code.push(`    const queryString = params.getQueryString();`);
+  code.push(`    const fullEndpoint = queryString ? \`\${endpoint}?\${queryString}\` : endpoint;`);
+  code.push('');
+
+  if (formData.language) {
+    code.push(`    const response = await client.request(fullEndpoint, { lang: '${formData.language}' });`);
+  } else {
+    code.push(`    const response = await client.request(fullEndpoint);`);
+  }
+
+  code.push('');
+  code.push(`    console.log('Fetched areas:', response.data);`);
+  code.push(`    return response;`);
+  code.push(`  } catch (error) {`);
+  code.push(`    console.error('Failed to fetch areas:', error);`);
+  code.push(`    throw error;`);
+  code.push(`  }`);
+  code.push(`}`);
+  code.push('');
+  code.push('// Call the function');
+  code.push('fetchAreas();');
+
+  return code.join('\n');
+}

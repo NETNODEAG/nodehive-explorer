@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { DrupalJsonApiParams } from 'drupal-jsonapi-params';
-import { Search, Loader2, ChevronDown, ChevronUp, Code } from 'lucide-react';
+import { Search, Loader2, ChevronDown, ChevronUp, Code, Boxes } from 'lucide-react';
 import FieldSelector from '../FieldSelector';
 import CodeGenerator from '../CodeGenerator';
-import { generateNodeCode } from '../../utils/codeGenerator';
+import { generateFragmentCode } from '../../utils/codeGenerator';
 import useConnectionStore from '../../store/connectionStore';
 
-function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+function FragmentsExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
   const { config } = useConnectionStore();
-  const [contentTypes, setContentTypes] = useState([]);
+  const [fragmentTypes, setFragmentTypes] = useState([]);
   const [formData, setFormData] = useState({
-    contentType: '',
+    fragmentType: '',
     language: '',
     limit: 10,
     sort: '',
@@ -22,69 +22,71 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
   const [showCodeGenerator, setShowCodeGenerator] = useState(false);
 
   useEffect(() => {
-    loadContentTypes();
+    loadFragmentTypes();
   }, [client]);
 
-  const loadContentTypes = async () => {
+  const loadFragmentTypes = async () => {
     try {
       // Fetch the main jsonapi index to see what's actually available
       const response = await client.request('/jsonapi');
 
       if (response.links) {
-        // Find all node--* endpoints
-        const nodeTypes = [];
+        // Find all nodehive_fragment--* endpoints
+        const fragmentTypes = [];
 
         Object.keys(response.links).forEach(key => {
-          if (key.startsWith('node--')) {
-            const machineType = key.replace('node--', '');
+          if (key.startsWith('nodehive_fragment--')) {
+            const fragmentType = key.replace('nodehive_fragment--', '');
             // Create a formatted label from the machine name
-            const label = machineType
+            const label = fragmentType
               .split('_')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' ');
 
-            nodeTypes.push({
+            fragmentTypes.push({
               id: key,
-              type: machineType,
               attributes: {
-                drupal_internal__type: machineType,
-                name: label
+                drupal_internal__id: fragmentType,
+                label: label
               }
             });
           }
         });
 
-        setContentTypes(nodeTypes);
+        setFragmentTypes(fragmentTypes);
       }
     } catch (error) {
-      console.error('Failed to load content types:', error);
+      console.error('Failed to load fragment types:', error);
     }
   };
 
-  const handleContentTypeChange = async (contentType) => {
-    setFormData({ ...formData, contentType, fields: [] });
+  const handleFragmentTypeChange = async (fragmentType) => {
+    setFormData({ ...formData, fragmentType, fields: [] });
 
-    if (!contentType) {
+    if (!fragmentType) {
       setAvailableFields([]);
       return;
     }
 
     try {
-      // Fetch a sample node to discover fields
+      // Fetch a sample fragment to discover fields
       const params = new DrupalJsonApiParams().addPageLimit(1);
-      const response = await client.getNodes(contentType, { params });
+      const queryString = params.getQueryString();
+      const endpoint = `/jsonapi/nodehive_fragment/${fragmentType}${queryString ? `?${queryString}` : ''}`;
+
+      const response = await client.request(endpoint);
 
       if (response.data && response.data.length > 0) {
-        const sampleNode = response.data[0];
+        const sampleFragment = response.data[0];
         let fields = [];
 
         // Check for fields in attributes
-        if (sampleNode.attributes) {
-          fields = Object.keys(sampleNode.attributes);
+        if (sampleFragment.attributes) {
+          fields = Object.keys(sampleFragment.attributes);
         }
 
         // Also check for direct fields
-        const directFields = Object.keys(sampleNode).filter(key =>
+        const directFields = Object.keys(sampleFragment).filter(key =>
           !['id', 'type', 'links', 'relationships', 'attributes', 'meta'].includes(key)
         );
 
@@ -101,8 +103,8 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.contentType) {
-      setError('Please select a content type');
+    if (!formData.fragmentType) {
+      setError('Please select a fragment type');
       return;
     }
 
@@ -130,15 +132,16 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
 
       // Add fields
       if (formData.fields.length > 0) {
-        params.addFields(`node--${formData.contentType}`, formData.fields);
+        params.addFields(`nodehive_fragment--${formData.fragmentType}`, formData.fields);
       }
 
-      const options = {
-        params,
-        lang: formData.language || undefined
-      };
+      const queryString = params.getQueryString();
+      const endpoint = `/jsonapi/nodehive_fragment/${formData.fragmentType}${queryString ? `?${queryString}` : ''}`;
 
-      const response = await client.getNodes(formData.contentType, options);
+      const response = await client.request(endpoint, {
+        lang: formData.language || undefined
+      });
+
       onDataFetch(response);
     } catch (error) {
       setError(error.message);
@@ -150,27 +153,30 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-border">
-        <h3 className="font-medium">Explore Nodes</h3>
+        <h3 className="font-medium flex items-center gap-2">
+          <Boxes size={18} />
+          Explore Fragments
+        </h3>
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto scrollbar-thin p-4">
         <div className="space-y-4">
-          {/* Content Type Selection */}
+          {/* Fragment Type Selection */}
           <div>
-            <label className="label">Content Type *</label>
+            <label className="label">Fragment Type *</label>
             <select
               className="select mt-1"
-              value={formData.contentType}
-              onChange={(e) => handleContentTypeChange(e.target.value)}
+              value={formData.fragmentType}
+              onChange={(e) => handleFragmentTypeChange(e.target.value)}
               required
             >
-              <option value="">Select content type...</option>
-              {contentTypes.map((type) => (
+              <option value="">Select fragment type...</option>
+              {fragmentTypes.map((type) => (
                 <option
                   key={type.id}
-                  value={type.attributes?.drupal_internal__type || type.type}
+                  value={type.attributes?.drupal_internal__id || type.id}
                 >
-                  {type.attributes?.name || type.attributes?.drupal_internal__type || type.type}
+                  {type.attributes?.label || type.attributes?.drupal_internal__id || type.id}
                 </option>
               ))}
             </select>
@@ -213,8 +219,8 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
               <option value="created,DESC">Created (Newest First)</option>
               <option value="created,ASC">Created (Oldest First)</option>
               <option value="changed,DESC">Updated (Newest First)</option>
-              <option value="title,ASC">Title (A-Z)</option>
-              <option value="title,DESC">Title (Z-A)</option>
+              <option value="label,ASC">Label (A-Z)</option>
+              <option value="label,DESC">Label (Z-A)</option>
             </select>
           </div>
 
@@ -265,7 +271,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
           <button
             type="submit"
             className="btn btn-primary btn-md w-full"
-            disabled={isLoading || !formData.contentType}
+            disabled={isLoading || !formData.fragmentType}
           >
             {isLoading ? (
               <>
@@ -275,7 +281,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
             ) : (
               <>
                 <Search className="mr-2" size={16} />
-                Load Nodes
+                Load Fragments
               </>
             )}
           </button>
@@ -284,7 +290,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
             type="button"
             onClick={() => setShowCodeGenerator(true)}
             className="btn btn-secondary btn-md w-full"
-            disabled={!formData.contentType}
+            disabled={!formData.fragmentType}
           >
             <Code className="mr-2" size={16} />
             Generate Code
@@ -295,7 +301,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateNodeCode(formData, config)}
+          code={generateFragmentCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}
@@ -303,4 +309,4 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
   );
 }
 
-export default NodesExplorer;
+export default FragmentsExplorer;

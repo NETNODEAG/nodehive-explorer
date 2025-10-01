@@ -26,20 +26,34 @@ function TaxonomyExplorer({ client, onDataFetch, isLoading, setIsLoading, setErr
 
   const loadVocabularies = async () => {
     try {
-      const params = new DrupalJsonApiParams();
-      params.addCustomParam({ jsonapi_include: 1 });
-      const response = await client.getTaxonomyVocabularies({ params });
-      // Always expect response.data since we're getting the full response now
-      if (response && response.data) {
-        setVocabularies(response.data);
+      // Fetch the main jsonapi index to see what's actually available
+      const response = await client.request('/jsonapi');
+
+      if (response.links) {
+        // Find all taxonomy_term--* endpoints
+        const vocabularies = [];
+
+        Object.keys(response.links).forEach(key => {
+          if (key.startsWith('taxonomy_term--')) {
+            const vocabularyId = key.replace('taxonomy_term--', '');
+            // Create a formatted label from the machine name
+            const label = vocabularyId
+              .split('_')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+
+            vocabularies.push({
+              id: key,
+              drupal_internal__vid: vocabularyId,
+              name: label
+            });
+          }
+        });
+
+        setVocabularies(vocabularies);
       }
     } catch (error) {
       console.error('Failed to load vocabularies:', error);
-      // Add fallback vocabularies with correct structure
-      setVocabularies([
-        { id: '1', drupal_internal__vid: 'tags', name: 'Tags' },
-        { id: '2', drupal_internal__vid: 'categories', name: 'Categories' }
-      ]);
     }
   };
 

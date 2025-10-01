@@ -1,67 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { DrupalJsonApiParams } from 'drupal-jsonapi-params';
-import { Image, Loader2, Search, Code } from 'lucide-react';
+import { Type, Loader2, Search, Code } from 'lucide-react';
 import CodeGenerator from '../CodeGenerator';
-import { generateMediaCode } from '../../utils/codeGenerator';
+import { generateTextsCode } from '../../utils/codeGenerator';
 import useConnectionStore from '../../store/connectionStore';
 
-function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
+function TextsExplorer({ client, onDataFetch, isLoading, setIsLoading, setError }) {
   const { config } = useConnectionStore();
-  const [mediaTypes, setMediaTypes] = useState([]);
   const [formData, setFormData] = useState({
-    mediaType: '',
     limit: 10,
     language: ''
   });
   const [showCodeGenerator, setShowCodeGenerator] = useState(false);
 
-  useEffect(() => {
-    loadMediaTypes();
-  }, [client]);
-
-  const loadMediaTypes = async () => {
-    try {
-      // Fetch the main jsonapi index to see what's actually available
-      const response = await client.request('/jsonapi');
-
-      if (response.links) {
-        // Find all media--* endpoints
-        const mediaTypes = [];
-
-        Object.keys(response.links).forEach(key => {
-          if (key.startsWith('media--')) {
-            const mediaType = key.replace('media--', '');
-            // Create a formatted label from the machine name
-            const label = mediaType
-              .split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ');
-
-            mediaTypes.push({
-              id: key,
-              type: mediaType,
-              attributes: {
-                drupal_internal__id: mediaType,
-                name: label
-              }
-            });
-          }
-        });
-
-        setMediaTypes(mediaTypes);
-      }
-    } catch (error) {
-      console.error('Failed to load media types:', error);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.mediaType) {
-      setError('Please select a media type');
-      return;
-    }
 
     try {
       setIsLoading(true);
@@ -69,13 +22,15 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
 
       const params = new DrupalJsonApiParams();
       params.addPageLimit(formData.limit);
+      params.addCustomParam({ jsonapi_include: 1 });
 
       const options = {
         params,
         lang: formData.language || undefined
       };
 
-      const response = await client.getMediaList(formData.mediaType, options);
+      const response = await client.getTexts(options);
+
       onDataFetch(response);
     } catch (error) {
       setError(error.message);
@@ -88,34 +43,13 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-border">
         <h3 className="font-medium flex items-center gap-2">
-          <Image size={18} />
-          Explore Media
+          <Type size={18} />
+          Explore Texts
         </h3>
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto scrollbar-thin p-4">
         <div className="space-y-4">
-          {/* Media Type */}
-          <div>
-            <label className="label">Media Type *</label>
-            <select
-              className="select mt-1"
-              value={formData.mediaType}
-              onChange={(e) => setFormData({ ...formData, mediaType: e.target.value })}
-              required
-            >
-              <option value="">Select media type...</option>
-              {mediaTypes.map((type) => (
-                <option
-                  key={type.id}
-                  value={type.type}
-                >
-                  {type.attributes?.name || type.type}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Language */}
           <div>
             <label className="label">Language</label>
@@ -142,10 +76,9 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
           </div>
 
           <div className="card p-4">
-            <h4 className="text-sm font-medium mb-2">Media Information</h4>
+            <h4 className="text-sm font-medium mb-2">Texts Information</h4>
             <p className="text-xs text-muted-foreground">
-              Media entities include images, videos, documents, and other file types
-              managed by your Drupal instance.
+              Texts are reusable text content entities that can be referenced across your site.
             </p>
           </div>
         </div>
@@ -155,7 +88,7 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
           <button
             type="submit"
             className="btn btn-primary btn-md w-full"
-            disabled={isLoading || !formData.mediaType}
+            disabled={isLoading}
           >
             {isLoading ? (
               <>
@@ -165,7 +98,7 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
             ) : (
               <>
                 <Search className="mr-2" size={16} />
-                Load Media
+                Load Texts
               </>
             )}
           </button>
@@ -174,7 +107,6 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
             type="button"
             onClick={() => setShowCodeGenerator(true)}
             className="btn btn-secondary btn-md w-full"
-            disabled={!formData.mediaType}
           >
             <Code className="mr-2" size={16} />
             Generate Code
@@ -185,7 +117,7 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       {/* Code Generator Modal */}
       {showCodeGenerator && (
         <CodeGenerator
-          code={generateMediaCode(formData, config)}
+          code={generateTextsCode(formData, config)}
           onClose={() => setShowCodeGenerator(false)}
         />
       )}
@@ -193,4 +125,4 @@ function MediaExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
   );
 }
 
-export default MediaExplorer;
+export default TextsExplorer;
