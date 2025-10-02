@@ -24,7 +24,6 @@ Try: https://nodehive-explorer.vercel.app/?baseurl=demo.nodehive.app
 npm install
 npm run dev
 npm run build
-npm run preview  # Preview production build
 ```
 
 ## Stack

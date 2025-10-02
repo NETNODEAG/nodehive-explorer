@@ -9,10 +9,35 @@ function RouterExplorer({ client, onDataFetch, isLoading, setIsLoading, setError
   const { config } = useConnectionStore();
   const [formData, setFormData] = useState({
     path: '',
-    method: 'getRouteByPath',
+    method: 'getResourceBySlug',
     language: ''
   });
   const [showCodeGenerator, setShowCodeGenerator] = useState(false);
+
+  const handleGetResourceBySlug = async (e) => {
+    e.preventDefault();
+
+    if (!formData.path) {
+      setError('Please enter a slug/path');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const options = {
+        lang: formData.language || undefined
+      };
+
+      const response = await client.getResourceBySlug(formData.path, options);
+      onDataFetch(response);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGetRouteByPath = async (e) => {
     e.preventDefault();
@@ -151,6 +176,7 @@ function RouterExplorer({ client, onDataFetch, isLoading, setIsLoading, setError
               value={formData.method}
               onChange={(e) => setFormData({ ...formData, method: e.target.value })}
             >
+              <option value="getResourceBySlug">Get Resource by Slug</option>
               <option value="getRouteByPath">Get Route by Path</option>
               <option value="translatePath">Translate Path</option>
               <option value="getPathAliases">List Path Aliases</option>
@@ -161,6 +187,7 @@ function RouterExplorer({ client, onDataFetch, isLoading, setIsLoading, setError
           <div className="card p-4">
             <h4 className="text-sm font-medium mb-2">Router Information</h4>
             <ul className="text-xs text-muted-foreground space-y-1">
+              <li>• <strong>Resource by Slug:</strong> Get a resource by its URL slug/alias</li>
               <li>• <strong>Route by Path:</strong> Resolve a URL to its entity</li>
               <li>• <strong>Translate Path:</strong> Convert between alias and internal path</li>
               <li>• <strong>Path Aliases:</strong> List all URL aliases</li>
@@ -202,6 +229,26 @@ function RouterExplorer({ client, onDataFetch, isLoading, setIsLoading, setError
 
         {/* Action Buttons */}
         <div className="sticky bottom-0 bg-card pt-4 mt-6 border-t border-border space-y-2">
+          {formData.method === 'getResourceBySlug' && (
+            <button
+              type="submit"
+              className="btn btn-primary btn-md w-full"
+              disabled={isLoading || !formData.path}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" size={16} />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2" size={16} />
+                  Get Resource
+                </>
+              )}
+            </button>
+          )}
+
           {formData.method === 'getRouteByPath' && (
             <button
               type="submit"

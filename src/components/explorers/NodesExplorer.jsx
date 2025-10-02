@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DrupalJsonApiParams } from 'drupal-jsonapi-params';
-import { Search, Loader2, ChevronDown, ChevronUp, Code } from 'lucide-react';
+import { Search, Loader2, ChevronDown, ChevronUp, Code, Plus, X, Filter } from 'lucide-react';
 import FieldSelector from '../FieldSelector';
 import CodeGenerator from '../CodeGenerator';
 import { generateNodeCode } from '../../utils/codeGenerator';
@@ -15,10 +15,12 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
     limit: 10,
     sort: '',
     includes: '',
-    fields: []
+    fields: [],
+    filters: []
   });
   const [availableFields, setAvailableFields] = useState([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [showCodeGenerator, setShowCodeGenerator] = useState(false);
 
   useEffect(() => {
@@ -62,7 +64,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
   };
 
   const handleContentTypeChange = async (contentType) => {
-    setFormData({ ...formData, contentType, fields: [] });
+    setFormData({ ...formData, contentType, fields: [], filters: [] });
 
     if (!contentType) {
       setAvailableFields([]);
@@ -96,6 +98,26 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       console.error('Failed to fetch fields:', error);
       setAvailableFields([]);
     }
+  };
+
+  const addFilter = () => {
+    setFormData({
+      ...formData,
+      filters: [...formData.filters, { field: '', operator: '=', value: '' }]
+    });
+  };
+
+  const removeFilter = (index) => {
+    setFormData({
+      ...formData,
+      filters: formData.filters.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateFilter = (index, key, value) => {
+    const newFilters = [...formData.filters];
+    newFilters[index][key] = value;
+    setFormData({ ...formData, filters: newFilters });
   };
 
   const handleSubmit = async (e) => {
@@ -133,6 +155,13 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
         params.addFields(`node--${formData.contentType}`, formData.fields);
       }
 
+      // Add filters
+      formData.filters.forEach(filter => {
+        if (filter.field && filter.value) {
+          params.addFilter(filter.field, filter.value, filter.operator);
+        }
+      });
+
       const options = {
         params,
         lang: formData.language || undefined
@@ -141,7 +170,18 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       const response = await client.getNodes(formData.contentType, options);
       onDataFetch(response);
     } catch (error) {
-      setError(error.message);
+      // Check if error response has structured errors
+      if (error.response?.errors && error.response.errors.length > 0) {
+        const apiError = error.response.errors[0];
+        setError({
+          title: apiError.title,
+          status: apiError.status,
+          detail: apiError.detail,
+          via: apiError.links?.via?.href
+        });
+      } else {
+        setError({ message: error.message || String(error) });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -154,7 +194,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto scrollbar-thin p-4">
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Content Type Selection */}
           <div>
             <label className="label">Content Type *</label>
@@ -218,7 +258,80 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
             </select>
           </div>
 
-          {/* Advanced Options */}
+          {/* Filters */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            >
+              {showFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              <Filter size={16} />
+              Filters
+            </button>
+
+            {showFilters && (
+              <div className="mt-2 space-y-2 pl-4 border-l-2 border-border">
+                {formData.filters.map((filter, index) => (
+                  <div key={index} className="flex gap-1.5 items-start">
+                    <div className="flex-1 space-y-1.5">
+                      <input
+                        type="text"
+                        className="input w-full text-sm"
+                        placeholder="Field (e.g., title)"
+                        value={filter.field}
+                        onChange={(e) => updateFilter(index, 'field', e.target.value)}
+                      />
+                      <div className="flex gap-1.5">
+                        <select
+                          className="select flex-1 text-sm"
+                          value={filter.operator}
+                          onChange={(e) => updateFilter(index, 'operator', e.target.value)}
+                        >
+                          <option value="=">=</option>
+                          <option value="<>">!=</option>
+                          <option value=">">{'>'}</option>
+                          <option value="<">{'<'}</option>
+                          <option value=">=">{'>='}</option>
+                          <option value="<=">{'<='}</option>
+                          <option value="CONTAINS">Contains</option>
+                          <option value="STARTS_WITH">Starts with</option>
+                          <option value="ENDS_WITH">Ends with</option>
+                          <option value="IN">In</option>
+                        </select>
+                        <input
+                          type="text"
+                          className="input flex-1 text-sm"
+                          placeholder="Value"
+                          value={filter.value}
+                          onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFilter(index)}
+                      className="btn btn-ghost btn-sm p-1"
+                      title="Remove filter"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addFilter}
+                  className="btn btn-outline btn-sm w-full"
+                >
+                  <Plus size={14} className="mr-1" />
+                  Add Filter
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Include Relations */}
           <div>
             <button
               type="button"
@@ -226,14 +339,12 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
             >
               {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              Advanced Options
+              Include Relations
             </button>
 
             {showAdvanced && (
-              <div className="mt-3 space-y-4 pl-6 border-l-2 border-border">
-                {/* Include Relations */}
+              <div className="mt-2 space-y-3 pl-4 border-l-2 border-border">
                 <div>
-                  <label className="label">Include Relations</label>
                   <input
                     type="text"
                     className="input mt-1"
@@ -261,7 +372,7 @@ function NodesExplorer({ client, onDataFetch, isLoading, setIsLoading, setError 
         </div>
 
         {/* Action Buttons */}
-        <div className="sticky bottom-0 bg-card pt-4 mt-6 border-t border-border space-y-2">
+        <div className="sticky bottom-0 bg-card pt-3 mt-4 border-t border-border space-y-2">
           <button
             type="submit"
             className="btn btn-primary btn-md w-full"

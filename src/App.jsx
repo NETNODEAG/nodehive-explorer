@@ -133,7 +133,18 @@ function App() {
       setClient(newClient);
       setIsConnected(true);
     } catch (err) {
-      setError(err.message);
+      // Check if error response has structured errors
+      if (err.response?.errors && err.response.errors.length > 0) {
+        const apiError = err.response.errors[0];
+        setError({
+          title: apiError.title,
+          status: apiError.status,
+          detail: apiError.detail,
+          via: apiError.links?.via?.href
+        });
+      } else {
+        setError({ message: err.message || String(err) });
+      }
       setIsConnected(false);
     } finally {
       setIsLoading(false);
@@ -175,7 +186,18 @@ function App() {
       const response = await client.request(pathWithQuery);
       setResponseData(response);
     } catch (error) {
-      setError(error.message);
+      // Check if error response has structured errors
+      if (error.response?.errors && error.response.errors.length > 0) {
+        const apiError = error.response.errors[0];
+        setError({
+          title: apiError.title,
+          status: apiError.status,
+          detail: apiError.detail,
+          via: apiError.links?.via?.href
+        });
+      } else {
+        setError({ message: error.message || String(error) });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -317,20 +339,44 @@ function App() {
         </header>
 
         {error && (
-          <div className="flex items-center justify-between px-6 py-3 bg-destructive/10 border-b border-destructive/20 text-destructive animate-slide-in">
-            <span className="text-sm">{error}</span>
-            <button
-              onClick={() => setError(null)}
-              className="text-destructive hover:text-destructive/80 text-lg leading-none"
-            >
-              ✕
-            </button>
+          <div className="px-6 py-3 bg-destructive/10 border-b border-destructive/20 text-destructive animate-slide-in">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-medium">
+                    {error.title || 'Error'}
+                  </span>
+                  {error.status && (
+                    <span className="text-xs font-mono bg-destructive/20 px-2 py-0.5 rounded">
+                      {error.status}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm">
+                  {error.detail || error.message || String(error)}
+                </p>
+                {error.via && (
+                  <details className="mt-2 text-xs">
+                    <summary className="cursor-pointer hover:underline">Request details</summary>
+                    <code className="block mt-1 p-2 bg-destructive/10 rounded break-all">
+                      {error.via}
+                    </code>
+                  </details>
+                )}
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-destructive hover:text-destructive/80 text-lg leading-none flex-shrink-0"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
         <div className="flex-1 flex overflow-hidden">
           {/* Form Column */}
-          <div className="w-[400px] border-r border-border flex flex-col">
+          <div className="w-[500px] border-r border-border flex flex-col">
             <EntityExplorer
               entity={selectedEntity}
               client={client}
@@ -344,7 +390,7 @@ function App() {
           </div>
 
           {/* Request/Response Column */}
-          <div className="w-[400px] border-r border-border flex flex-col">
+          <div className="w-[380px] border-r border-border flex flex-col">
             <RequestPanel requestInfo={requestInfo} responseData={responseData} />
           </div>
 

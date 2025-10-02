@@ -12,6 +12,7 @@ import AreasExplorer from './explorers/AreasExplorer';
 import MediaTypesExplorer from './explorers/MediaTypesExplorer';
 import FragmentTypesExplorer from './explorers/FragmentTypesExplorer';
 import TaxonomyVocabulariesExplorer from './explorers/TaxonomyVocabulariesExplorer';
+import SlugRoutingExplorer from './explorers/SlugRoutingExplorer';
 import { AlertCircle } from 'lucide-react';
 
 function EntityExplorer({ entity, client, isConnected, onDataFetch, isLoading, setIsLoading, setError, userInfo }) {
@@ -36,6 +37,7 @@ function EntityExplorer({ entity, client, isConnected, onDataFetch, isLoading, s
     'media': MediaExplorer,
     'menus': MenusExplorer,
     'router': RouterExplorer,
+    'slug-routing': SlugRoutingExplorer,
     'texts': TextsExplorer,
     'fragments': FragmentsExplorer,
     'spaces': SpacesExplorer,

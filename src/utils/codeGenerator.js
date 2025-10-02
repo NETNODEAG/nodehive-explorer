@@ -59,6 +59,14 @@ export function generateNodeCode(formData, clientConfig = {}) {
     code.push(`  params.addFields('node--${formData.contentType}', [${fields}]);`);
   }
 
+  if (formData.filters && formData.filters.length > 0) {
+    formData.filters.forEach(filter => {
+      if (filter.field && filter.value) {
+        code.push(`  params.addFilter('${filter.field}', '${filter.value}', '${filter.operator}');`);
+      }
+    });
+  }
+
   code.push('');
 
   // Make the request
@@ -748,6 +756,77 @@ export function generateAreasCode(formData, clientConfig = {}) {
   code.push('');
   code.push('// Call the function');
   code.push('fetchAreas();');
+
+  return code.join('\n');
+}
+
+export function generateSlugRoutingCode(formData, clientConfig = {}) {
+  const code = [];
+
+  // Import statements
+  code.push(`import { NodeHiveClient } from 'nodehive-js';`);
+  code.push('');
+
+  // Function definition
+  code.push(`async function resolveSlug() {`);
+  code.push(`  // Initialize the client`);
+  code.push(`  const client = new NodeHiveClient({`);
+  code.push(`    baseUrl: '${clientConfig?.baseUrl || 'https://your-site.nodehive.app'}',`);
+
+  if (clientConfig.language) {
+    code.push(`    defaultLanguage: '${clientConfig.language}',`);
+  }
+  if (clientConfig.timeout) {
+    code.push(`    timeout: ${clientConfig.timeout},`);
+  }
+  if (clientConfig.debug !== undefined) {
+    code.push(`    debug: ${clientConfig.debug},`);
+  }
+  if (clientConfig.authToken) {
+    code.push(`    auth: {`);
+    code.push(`      token: process.env.AUTH_TOKEN || '${clientConfig.authToken}'`);
+    code.push(`    },`);
+  }
+  if (clientConfig.retryEnabled) {
+    code.push(`    retry: {`);
+    code.push(`      enabled: true,`);
+    code.push(`      maxAttempts: ${clientConfig.retryAttempts || 3},`);
+    code.push(`      delay: 1000`);
+    code.push(`    }`);
+  }
+  code.push(`  });`);
+  code.push('');
+
+  // Make the request
+  code.push(`  // Resolve the slug to a resource`);
+  code.push(`  try {`);
+
+  const optionsArr = [];
+  if (formData.language) {
+    optionsArr.push(`lang: '${formData.language}'`);
+  }
+
+  if (optionsArr.length > 0) {
+    code.push(`    const response = await client.getResourceBySlug('${formData.slug || '/your-slug'}', {`);
+    optionsArr.forEach((opt, index) => {
+      code.push(`      ${opt}${index < optionsArr.length - 1 ? ',' : ''}`);
+    });
+    code.push(`    });`);
+  } else {
+    code.push(`    const response = await client.getResourceBySlug('${formData.slug || '/your-slug'}');`);
+  }
+
+  code.push('');
+  code.push(`    console.log('Resolved resource:', response);`);
+  code.push(`    return response;`);
+  code.push(`  } catch (error) {`);
+  code.push(`    console.error('Failed to resolve slug:', error);`);
+  code.push(`    throw error;`);
+  code.push(`  }`);
+  code.push(`}`);
+  code.push('');
+  code.push('// Call the function');
+  code.push('resolveSlug();');
 
   return code.join('\n');
 }

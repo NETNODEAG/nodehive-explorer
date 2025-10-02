@@ -33,6 +33,7 @@ const typeEntities = [
 ];
 
 const systemEntities = [
+  { id: 'slug-routing', label: 'Slug Routing', icon: Globe, description: 'Resolve slugs to resources' },
   { id: 'router', label: 'Router', icon: Link, description: 'URL aliases' },
   { id: 'spaces', label: 'Spaces', icon: Globe, description: 'NodeHive spaces' }
 ];
